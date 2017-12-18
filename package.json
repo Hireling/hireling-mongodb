@@ -1,0 +1,43 @@
+{
+  "name": "hireling-mongodb",
+  "version": "1.0.0",
+  "description": "Official MongoDB database connector for Hireling.",
+  "author": "Alex Soncodi",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "clean": "rm -rf ./build",
+    "lint": "tslint -p tsconfig.json",
+    "build": "tsc",
+    "package": "npm run clean && npm run build && ./package.sh"
+  },
+  "dependencies": {
+    "mongodb": "~2.2.33"
+  },
+  "devDependencies": {
+    "@types/mongodb": "~2.2.17",
+    "@types/node": "~8.5.1",
+    "typescript": "~2.6.2"
+  },
+  "peerDependencies": {
+    "hireling": "^1"
+  },
+  "keywords": [
+    "mongo",
+    "mongodb",
+    "database",
+    "store",
+    "driver",
+    "adapter",
+    "connector",
+    "hireling"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hireling/hireling-mongodb.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Hireling/hireling-mongodb/issues"
+  },
+  "homepage": "https://github.com/Hireling/hireling-mongodb#readme"
+}
