@@ -1,6 +1,6 @@
 # hireling-mongodb
 
-### Official MongoDB database connector for [Hireling](https://github.com/Hireling/hireling)
+### MongoDB database connector for [Hireling](https://github.com/Hireling/hireling)
 
 [![npm version](https://badge.fury.io/js/hireling-mongodb.svg)](https://badge.fury.io/js/hireling-mongodb)
 
