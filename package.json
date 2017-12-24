@@ -1,6 +1,6 @@
 {
   "name": "hireling-mongodb",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "MongoDB database connector for Hireling.",
   "author": "Alex Soncodi",
   "license": "MIT",
