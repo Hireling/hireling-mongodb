@@ -12,16 +12,16 @@ type MongoIncludeFields<T> = {
   [P in keyof T]?: 1;
 };
 
-interface MongoPredicate<T, P extends keyof T> {
-  $lt?: T[P];
-}
+// interface MongoPredicate<T, P extends keyof T> {
+//   $lt?: T[P];
+// }
 
-type MongoQueryFilter<T> = {
-  [P in keyof T]?: T[P]|MongoPredicate<T, P>;
-};
+// type MongoQueryFilter<T> = {
+//   [P in keyof T]?: T[P]|MongoPredicate<T, P>;
+// };
 
 export const MONGO_DEFS = {
-  uri:         'mongodb://localhost:27017/hireling',
+  uri:        'mongodb://localhost:27017/hireling',
   collection: 'jobs'
 };
 
@@ -94,12 +94,6 @@ export class MongoEngine extends HirelingDb {
     });
   }
 
-  async clear() {
-    const { deletedCount } = await this.coll.deleteMany({});
-
-    return deletedCount || 0;
-  }
-
   async add(job: JobAttr) {
     this.log.debug(`add job ${job.id}`);
 
@@ -119,7 +113,15 @@ export class MongoEngine extends HirelingDb {
     return mjob ? MongoEngine.fromMongo<JobAttr>(mjob) : null;
   }
 
-  async atomicFindReady(wId: WorkerId) {
+  async get(query: Partial<JobAttr>) {
+    this.log.debug('search jobs');
+
+    const mjob = await this.coll.find(MongoEngine.toMongo(query)).toArray();
+
+    return mjob.map(m => MongoEngine.fromMongo<JobAttr>(m));
+  }
+
+  async reserve(wId: WorkerId) {
     this.log.debug(`atomic find update job ${wId}`);
 
     const from: JobStatus = 'ready';
@@ -162,94 +164,20 @@ export class MongoEngine extends HirelingDb {
     return true;
   }
 
-  async removeByStatus(status: JobStatus) {
-    this.log.debug(`remove jobs by status [${status}]`);
+  async remove(query: Partial<JobAttr>) {
+    this.log.debug('remove jobs');
 
-    const filter: Partial<JobAttr> = { status };
+    const filter = MongoEngine.toMongo(query);
 
     const { deletedCount } = await this.coll.deleteMany(filter);
 
     return deletedCount || 0;
   }
 
-  async refreshExpired() {
-    this.log.debug('refresh expired jobs');
+  async clear() {
+    const { deletedCount } = await this.coll.deleteMany({});
 
-    const now = Date.now();
-    let updated = 0;
-
-    const query: MongoQueryFilter<JobAttr> = {
-      status:  'processing',
-      expires: { $lt: new Date() }
-    };
-
-    type ExpiredFields = Pick<JobAttr, 'id'|'attempts'|'expires'|'expirems'>;
-
-    const inc: MongoIncludeFields<ExpiredFields> = {
-      attempts: 1, expires: 1, expirems: 1
-    };
-
-    const jobs = await this.coll
-      .find(query).project(inc).snapshot(true).toArray();
-
-    for (const jm of jobs) {
-      const j = MongoEngine.fromMongo<ExpiredFields>(jm);
-
-      const update: Partial<JobAttr> = {
-        status:   'ready',
-        expires:  new Date(now + j.expirems!),
-        attempts: j.attempts + 1
-      };
-
-      const { modifiedCount } = await this.coll.updateOne(
-        { _id: j.id },
-        { $set: update }
-      );
-
-      updated += modifiedCount;
-    }
-
-    return updated;
-  }
-
-  async refreshStalled() {
-    this.log.debug('refresh stalled jobs');
-
-    const now = Date.now();
-    let updated = 0;
-
-    const query: MongoQueryFilter<JobAttr> = {
-      status: 'processing',
-      stalls: { $lt: new Date() }
-    };
-
-    type StalledFields = Pick<JobAttr, 'id'|'attempts'|'stalls'|'stallms'>;
-
-    const inc: MongoIncludeFields<StalledFields> = {
-      attempts: 1, stalls: 1, stallms: 1
-    };
-
-    const jobs = await this.coll
-      .find(query).project(inc).snapshot(true).toArray();
-
-    for (const jm of jobs) {
-      const j = MongoEngine.fromMongo<StalledFields>(jm);
-
-      const update: Partial<JobAttr> = {
-        status:   'ready',
-        stalls:   new Date(now + j.stallms!),
-        attempts: j.attempts + 1
-      };
-
-      const { modifiedCount } = await this.coll.updateOne(
-        { _id: j.id },
-        { $set: update }
-      );
-
-      updated += modifiedCount;
-    }
-
-    return updated;
+    return deletedCount || 0;
   }
 
   private static fromMongo<T>(mobj: any) {
