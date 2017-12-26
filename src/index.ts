@@ -21,8 +21,10 @@ type MongoIncludeFields<T> = {
 // };
 
 export const MONGO_DEFS = {
-  uri:        'mongodb://localhost:27017/hireling',
-  collection: 'jobs'
+  uri:        'mongodb://localhost:27017',
+  database:   'hireling',
+  collection: 'jobs',
+  opts:       ({} as any) as object // pass-through client options, merged in
 };
 
 export type MongoOpt = typeof MONGO_DEFS;
@@ -41,8 +43,9 @@ export class MongoEngine extends HirelingDb {
   }
 
   open() {
-    MongoClient.connect(this.dbc.uri, {
-      autoReconnect: false // handle manually, no query replaying
+    MongoClient.connect(`${this.dbc.uri}/${this.dbc.database}`, {
+      autoReconnect: false, // handle manually, no query replaying
+      ...this.dbc.opts
     }, async (err, db) => {
       if (err) {
         this.log.error('could not connect to db', err);
@@ -67,7 +70,6 @@ export class MongoEngine extends HirelingDb {
 
       // db.on('reconnect', () => {
       //   this.log.debug('opened (reconnect)');
-
       //   this.event(DbEvent.open);
       // });
 
