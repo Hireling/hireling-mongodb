@@ -74,11 +74,13 @@ export class MongoEngine extends HirelingDb {
       this.db = db;
       this.coll = this.db.collection(this.dbc.collection);
 
-      const i1: MongoIncludeFields<JobAttr> = { status: 1, expires: 1 };
-      const i2: MongoIncludeFields<JobAttr> = { status: 1, stalls: 1 };
+      const indexes: MongoIncludeFields<JobAttr>[] = [
+        { status: 1 }
+      ];
 
-      await this.coll.createIndex(i1);
-      await this.coll.createIndex(i2);
+      for (const i of indexes) {
+        await this.coll.createIndex(i);
+      }
 
       this.event(DbEvent.open);
     });
