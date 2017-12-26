@@ -45,6 +45,7 @@ export class MongoEngine extends HirelingDb {
   open() {
     MongoClient.connect(`${this.dbc.uri}/${this.dbc.database}`, {
       autoReconnect: false, // handle manually, no query replaying
+      poolSize:      10,
       ...this.dbc.opts
     }, async (err, db) => {
       if (err) {
