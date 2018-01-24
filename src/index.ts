@@ -1,5 +1,5 @@
 import { MongoClient, Collection, Db as MongoDb } from 'mongodb';
-import { Db as HirelingDb, DbEvent } from 'hireling/db';
+import { Db as HirelingDb } from 'hireling/db';
 import { JobId, JobAttr, JobStatus } from 'hireling/job';
 import { WorkerId } from 'hireling/worker';
 
@@ -50,7 +50,7 @@ export class MongoEngine extends HirelingDb {
     }, async (err, db) => {
       if (err) {
         this.log.error('could not connect to db', err);
-        this.event(DbEvent.close, err);
+        this.down.emit(err);
         return;
       }
 
@@ -65,13 +65,13 @@ export class MongoEngine extends HirelingDb {
           await this.db.close(true);
         }
         else {
-          this.event(DbEvent.close);
+          this.down.emit(null);
         }
       });
 
       // db.on('reconnect', () => {
       //   this.log.debug('opened (reconnect)');
-      //   this.event(DbEvent.open);
+      //   this.up.emit();
       // });
 
       this.db = db;
@@ -85,7 +85,7 @@ export class MongoEngine extends HirelingDb {
         await this.coll.createIndex(i);
       }
 
-      this.event(DbEvent.open);
+      this.up.emit();
     });
   }
 
