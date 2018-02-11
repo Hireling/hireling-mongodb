@@ -30,8 +30,8 @@ export const MONGO_DEFS = {
 export type MongoOpt = typeof MONGO_DEFS;
 
 export class MongoEngine extends HirelingDb {
-  private db: MongoDb;
-  private coll: Collection<MongoAttr>;
+  private db!: MongoDb;
+  private coll!: Collection<MongoAttr>;
   private readonly dbc: MongoOpt;
 
   constructor(opt?: Partial<MongoOpt>) {
